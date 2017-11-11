@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Collect</string>
+    <string name="accessibility_description">用于监听屏幕按键，点击事件，请务必打开</string>
+</resources>
