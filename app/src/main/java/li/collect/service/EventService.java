@@ -58,7 +58,7 @@ public class EventService extends AccessibilityService {
         super.onCreate();
         Log.d("zw", "EventService onreate");
         initData();
-        initFile();
+
         initEventListen();
     }
 
@@ -115,6 +115,7 @@ public class EventService extends AccessibilityService {
 
         //判断是否按键抬起
         if (isRecord && event.getAction() == KeyEvent.ACTION_UP) {
+            initFile();
             initWriter();
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BACK://返回键
@@ -145,6 +146,7 @@ public class EventService extends AccessibilityService {
         int type = accessibilityEvent.getEventType();
         isRecord = myApplication.isRecord();
         if (isRecord) {
+            initFile();
             initWriter();
             switch (type) {
                 case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:  //收到通知栏消息
@@ -207,6 +209,7 @@ public class EventService extends AccessibilityService {
             super.onCallStateChanged(state, incomingNumber);
             isRecord = myApplication.isRecord();
             if (isRecord) {
+                initFile();
                 initWriter();
                 switch (state) {
                     case TelephonyManager.CALL_STATE_IDLE://挂断
@@ -281,6 +284,7 @@ public class EventService extends AccessibilityService {
         public void onReceive(Context context, Intent intent) {
             isRecord = myApplication.isRecord();
             if (isRecord) {
+                initFile();
                 initWriter();
                 saveEventModuleToFile(getCurrentTime(), "TYPE_CALL_OTHER");
             }
@@ -295,6 +299,7 @@ public class EventService extends AccessibilityService {
             if (Intent.ACTION_SCREEN_OFF.equals(action)) {
                 isRecord = myApplication.isRecord();
                 if (isRecord) {
+                    initFile();
                     initWriter();
                     saveEventModuleToFile(getCurrentTime(), "ACTION_SCREEN_OFF");
                 }
@@ -315,6 +320,7 @@ public class EventService extends AccessibilityService {
                 if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
                     String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
                     if (SYSTEM_DIALOG_REASON_HOME_KEY.equals(reason)) {
+                        initFile();
                         initWriter();
                         saveEventModuleToFile(getCurrentTime(), "TYPE_CLICK_HOME");
                     }
@@ -362,6 +368,7 @@ public class EventService extends AccessibilityService {
     public static void closeIo() {
         date = "";
         try {
+            if (eventWriter != null)
             eventWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
