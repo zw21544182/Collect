@@ -18,6 +18,10 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -102,7 +106,11 @@ public class SensorService extends Service implements SensorEventListener {
         eventModule = new EventModule();
         valueList = new ArrayList<>();
         executorService = Executors.newCachedThreadPool();
-        gson = new Gson();
+        gson = new GsonBuilder()
+                //为User注册TypeAdapter
+                .registerTypeAdapter(SensorModule.class, new SensorTypeAdapter())
+                .create();
+
     }
 
     private void initFile() {
@@ -390,13 +398,12 @@ public class SensorService extends Service implements SensorEventListener {
 
     @Override
     public void onDestroy() {
-//        sensorManager.unregisterListener(this);
-//        try {
-//            sensorWriter.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        unregisterBrocast();
+        sensorManager.unregisterListener(this);
+        try {
+            sensorWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         myApplication.setRecord(false);
         EventService.closeIo();
         Toast.makeText(this, "监听服务关闭 ", Toast.LENGTH_SHORT).show();
@@ -442,9 +449,23 @@ public class SensorService extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        flags = START_STICKY;
-        return super.onStartCommand(intent, flags, startId);
+        return super.onStartCommand(intent, Service.START_STICKY, startId);
     }
 
+    public class SensorTypeAdapter extends TypeAdapter<SensorModule> {
 
+        @Override
+        public void write(JsonWriter out, SensorModule value) throws IOException {
+            out.beginObject();
+            out.name("time").value(value.getTime());
+            out.name("sensorType").value(value.getSensorType());
+            out.name("floats").value(value.getFloats().toString());
+            out.endObject();
+        }
+
+        @Override
+        public SensorModule read(JsonReader in) throws IOException {
+            return null;
+        }
+    }
 }
